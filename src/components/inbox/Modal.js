@@ -63,6 +63,7 @@ export default function Modal({ open, control }) {
         if(conversation.length > 0){
             updateConversation({
                 id: conversation[0]?.id,
+                sender: myEmail,
                 data: {
                     participants: `${myEmail}-${perticipant[0].email}`,
                     users: [loggedinUser,perticipant[0]],
@@ -72,10 +73,13 @@ export default function Modal({ open, control }) {
             })
         }else{
             addConversation( {
-                participants: `${myEmail}-${perticipant[0].email}`,
-                users: [loggedinUser,perticipant[0]],
-                message,
-                timestamp: new Date().getTime()
+                sender: myEmail,
+                data: {
+                    participants: `${myEmail}-${perticipant[0].email}`,
+                    users: [loggedinUser,perticipant[0]],
+                    message,
+                    timestamp: new Date().getTime()
+                }
             })
         }
     }
