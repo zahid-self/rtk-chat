@@ -1,14 +1,10 @@
 import Blank from "../components/inbox/chatbody/Blank";
 import Navigation from "../components/inbox/Navigation";
 import Sidebar from "../components/inbox/Sidebar";
-import { useGetConversationsQuery } from "../features/conversations/conversationsAPI";
 
 export default function Inbox() {
 
-    const{data,isLoading,isError,error} = useGetConversationsQuery();
-
-    console.log(data);
-
+    
     return (
         <div>
             <Navigation />

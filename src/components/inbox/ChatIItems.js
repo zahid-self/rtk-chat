@@ -1,28 +1,55 @@
+import { useSelector } from "react-redux";
+import { useGetConversationsQuery } from "../../features/conversations/conversationsAPI";
 import ChatItem from "./ChatItem";
+import Error from "../ui/Error"
+import moment from 'moment';
+import { getPartnerInfo } from "../../utils/getPartnerInfo";
+import gravatar from "gravatar"
+import { Link } from "react-router-dom";
 
 export default function ChatItems() {
+
+    const{user} = useSelector(state => state.auth) || {};
+    const{email} = user || {}
+    const{data : conversations,isLoading,isError,error} = useGetConversationsQuery(email);
+
+
+    //decide what to render
+    let content = null;
+
+    if (isLoading) {
+        content = <li className="text-center">Loading...</li>
+    } else if(!isLoading && isError) {
+        content = <Error message={error?.data}/>
+    }else if(!isLoading && !isError && conversations.length === 0) {
+        content = <li className="text-center">No conversation found!</li>
+    }else if(!isLoading && !isError && conversations.length > 0) {
+        content = conversations.map((conversation) => {
+
+            const partner = getPartnerInfo(conversation.users,email);
+            const{name,email: partnerEmail} = partner || {}
+            const{id,message,timestamp} = conversation;
+
+            return(
+                <li>
+                    <Link to={`/inbox/${id}`}>
+                        <ChatItem
+                            key={id}
+                            avatar={gravatar.url((partnerEmail, {
+                                size: 80
+                            }))}
+                            name={name}
+                            lastMessage={message}
+                            lastTime={moment(timestamp).fromNow()}
+                        />
+                    </Link>
+                </li>
+            )
+    })
+    }
+
+
     return (
-        <ul>
-            <li>
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Saad Hasan"
-                    lastMessage="bye"
-                    lastTime="25 minutes"
-                />
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Sumit Saha"
-                    lastMessage="will talk to you later"
-                    lastTime="10 minutes"
-                />
-                <ChatItem
-                    avatar="https://cdn.pixabay.com/photo/2018/09/12/12/14/man-3672010__340.jpg"
-                    name="Mehedi Hasan"
-                    lastMessage="thanks for your support"
-                    lastTime="15 minutes"
-                />
-            </li>
-        </ul>
+        <ul>{content}</ul>
     );
 }
