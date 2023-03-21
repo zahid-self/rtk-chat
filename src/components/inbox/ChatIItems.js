@@ -31,13 +31,13 @@ export default function ChatItems() {
             const{id,message,timestamp} = conversation;
 
             return(
-                <li>
+                <li key={conversation.id}>
                     <Link to={`/inbox/${id}`}>
                         <ChatItem
                             key={id}
-                            avatar={gravatar.url((partnerEmail, {
+                            avatar={gravatar.url(partnerEmail, {
                                 size: 80
-                            }))}
+                            })}
                             name={name}
                             lastMessage={message}
                             lastTime={moment(timestamp).fromNow()}
