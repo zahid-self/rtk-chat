@@ -41,19 +41,32 @@ export const conversationsAPI = apiSlice.injectEndpoints({
             }),
             async onQueryStarted(arg,{queryFulfilled,dispatch}){
 
-                //entry to the message table
-                const conversation = await queryFulfilled;
+                //optimistic cache update
+                const updateConversationCacheUpdate = dispatch(
+                    apiSlice.util.updateQueryData('getConversations',arg?.sender,(draft) => {
+                        const draftConversation = draft.find(c => c.id == arg?.id);
+                        draftConversation.message = arg.data.message
+                        draftConversation.timestamp = arg.data.timestamp
+                    })
+                )
 
-                if(conversation?.data?.id){
-                    const senderUser = arg?.data?.users.find(user => user.email === arg?.sender);
-                    const receiverUser = arg?.data?.users.find(user => user.email !== arg?.sender);
-                    dispatch(messagesAPI.endpoints.addMessage.initiate({
-                        conversationId: conversation?.data?.id,
-                        sender: senderUser,
-                        receiver: receiverUser,
-                        message: arg?.data?.message,
-                        timestamp: arg?.data?.timestamp
-                    }))
+                //entry to the message table
+                try {
+                    const conversation = await queryFulfilled;
+
+                    if(conversation?.data?.id){
+                        const senderUser = arg?.data?.users.find(user => user.email === arg?.sender);
+                        const receiverUser = arg?.data?.users.find(user => user.email !== arg?.sender);
+                        dispatch(messagesAPI.endpoints.addMessage.initiate({
+                            conversationId: conversation?.data?.id,
+                            sender: senderUser,
+                            receiver: receiverUser,
+                            message: arg?.data?.message,
+                            timestamp: arg?.data?.timestamp
+                        }))
+                    }
+                } catch (error) {
+                    updateConversationCacheUpdate.undo()
                 }
             }
         })
