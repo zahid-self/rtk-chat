@@ -1,11 +1,43 @@
-export default function Options() {
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useUpdateConversationMutation } from "../../../features/conversations/conversationsAPI";
+
+export default function Options({info}) {
+
+    const[message,setMessage] = useState('');
+    const[updateConversation, {isSuccess}] = useUpdateConversationMutation();
+    const{user : loggedinUser} = useSelector(state => state.auth);
+    const perticipantUser = info?.receiver?.email !== loggedinUser?.email ? info?.receiver : info?.sender;
+
+    useEffect(() => {
+        if(isSuccess){
+            setMessage('')
+        }
+    },[isSuccess])
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        updateConversation({
+            id: info?.conversationId,
+            sender: loggedinUser?.email,
+            data: {
+                participants: `${loggedinUser?.email}-${perticipantUser?.email}`,
+                users: [loggedinUser,perticipantUser],
+                message,
+                timestamp: new Date().getTime()
+            }
+        })
+    } 
+
     return (
-        <div className="flex items-center justify-between w-full p-3 border-t border-gray-300">
+        <form className="flex items-center justify-between w-full p-3 border-t border-gray-300" onSubmit={handleSubmit}>
             <input
                 type="text"
                 placeholder="Message"
                 className="block w-full py-2 pl-4 mx-3 bg-gray-100 focus:ring focus:ring-violet-500 rounded-full outline-none focus:text-gray-700"
                 name="message"
+                value={message}
+                onChange={e => setMessage(e.target.value)}
                 required
             />
             <button type="submit">
@@ -18,6 +50,6 @@ export default function Options() {
                     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
                 </svg>
             </button>
-        </div>
+        </form>
     );
 }
