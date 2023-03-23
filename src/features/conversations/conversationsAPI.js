@@ -57,13 +57,22 @@ export const conversationsAPI = apiSlice.injectEndpoints({
                     if(conversation?.data?.id){
                         const senderUser = arg?.data?.users.find(user => user.email === arg?.sender);
                         const receiverUser = arg?.data?.users.find(user => user.email !== arg?.sender);
-                        dispatch(messagesAPI.endpoints.addMessage.initiate({
+
+                        const res = await dispatch(messagesAPI.endpoints.addMessage.initiate({
                             conversationId: conversation?.data?.id,
                             sender: senderUser,
                             receiver: receiverUser,
                             message: arg?.data?.message,
                             timestamp: arg?.data?.timestamp
-                        }))
+                        })).unwrap()
+
+                        //update cache passimystically
+                        dispatch(
+                            apiSlice.util.updateQueryData('getMessages',res?.conversationId.toString(),(draft) => {
+                                draft.push(res)
+                            })
+                        )
+
                     }
                 } catch (error) {
                     updateConversationCacheUpdate.undo()
