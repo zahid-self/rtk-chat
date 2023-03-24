@@ -69,6 +69,12 @@
       "message": "n publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document ",
       "timestamp": 1679539189342,
       "id": 2
+    },
+    {
+      "title": "OSI Model Study",
+      "description": "Study about OSI model",
+      "status": "todo",
+      "id": 3
     }
   ],
   "messages": [
