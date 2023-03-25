@@ -1,10 +1,45 @@
 import { apiSlice } from "../api/apiSlice"
 import { messagesAPI } from "../messages/messagesAPI"
+import {io} from "socket.io-client"
 
 export const conversationsAPI = apiSlice.injectEndpoints({
     endpoints: (build) => ({
         getConversations: build.query({
-            query: (email) => `/conversations?participants_like=${email}&_sort=timestamp&&_order=desc&_page=1&_limit=${process.env.REACT_APP_CONVERSATIONS_LIMIT}`
+            query: (email) => `/conversations?participants_like=${email}&_sort=timestamp&&_order=desc&_page=1&_limit=${process.env.REACT_APP_CONVERSATIONS_LIMIT}`,
+            async onCacheEntryAdded(arg,{updateCachedData,cacheDataLoaded, cacheEntryRemoved}){
+
+                const socket = io('http://localhost:9000',{
+                    reconnectionDelay: 1000,
+                    reconnection: true,
+                    reconnectionAttemps: 10,
+                    transports: ["websocket"],
+                    agent: false,
+                    upgrade: false,
+                    rejectUnauthorized: false,
+                });
+
+                try {
+                    await cacheDataLoaded
+
+                    socket.on("conversations",(body) => {
+                        console.log(body?.body?.id);
+                        updateCachedData((draft) => {
+                            const conversation = draft.find((c) => c.id == body?.body?.id);
+                            
+                            if(conversation?.id){
+                                conversation.message = body?.body?.message;
+                                conversation.timestamp = body?.body?.timestamp;
+                            }
+                        })
+                    })
+
+
+                } catch (error) {}
+
+                await cacheEntryRemoved
+                socket.close()
+                
+            }
         }),
         getConversation: build.query({
             query: ({email,participantEmail}) => `/conversations?participants_like=${email}-${participantEmail}&&participants_like=${participantEmail}-${email}&_limit=1`
