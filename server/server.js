@@ -16,6 +16,7 @@ router.render = (req, res) => {
     const path = req.path;
     const method = req.method;
     if(path.includes('/conversations') && (method === 'POST' || method === 'PATCH')){
+        console.log(res.locals.data);
         io.emit("conversations",{
             body: res.locals.data
         })

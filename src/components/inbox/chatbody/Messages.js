@@ -12,7 +12,7 @@ export default function Messages({messages = []}) {
                 {
                     messages.map((message) => {
                         const justify = email !== message.sender.email ? 'start' : 'end'
-                        return <Message justify={justify} message={message?.message} />
+                        return <Message key={message.id} justify={justify} message={message?.message} />
                     })
                 }
             </ul>
